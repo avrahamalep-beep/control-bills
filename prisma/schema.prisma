@@ -1,0 +1,201 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Person {
+  TALI
+  AVRAHAM
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+
+  bankAccounts     BankAccount[]
+  fixedPayments    FixedPayment[]
+  extraPayments    ExtraPayment[]
+  superCategories  SuperCategory[]
+  superPurchases   SuperPurchase[]
+  userSettings     UserSettings?
+  monthSalaries      MonthSalary[]
+  monthIncomeEntries MonthIncomeEntry[]
+  loans              Loan[]
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model UserSettings {
+  id                      String  @id @default(cuid())
+  userId                  String  @unique
+  user                    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// משכורת ממוצעת/משוערת (לא קבועה) — בערך 18,000
+  defaultMonthlySalary     Float   @default(18000)
+  /// חוב ענקי/למעקב (מספר כולל, אם רלוונטי)
+  totalDebt                Float   @default(0)
+  /// הערות כלליות
+  notes                    String? @db.Text
+  updatedAt                DateTime @updatedAt
+}
+
+/// משכורת לחודש ספציפי (עוקף את ברירת המחדל)
+model MonthSalary {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  year      Int
+  month     Int
+  amount    Float
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, year, month])
+}
+
+/// הכנסות נוספות לחודש (מתווספות למשכורת בחישוב)
+model MonthIncomeEntry {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  year      Int
+  month     Int
+  label     String?
+  amount    Float
+  createdAt DateTime @default(now())
+}
+
+/// חשבון בנק — יכול להיות מינוס
+model BankAccount {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String
+  balance    Float    @default(0)
+  sortOrder  Int      @default(0)
+  person     Person   @default(TALI)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+/// תשלומים קבועים
+model FixedPayment {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label       String
+  amount      Float
+  /// 1-31, כמה בחודש
+  dayOfMonth  Int      @default(1)
+  isActive    Boolean  @default(true)
+  /// קטגוריה חופשית
+  category    String?
+  /// מחודש זה (1 בחודש) התשלום נספר — חישוב "כמה חודשים" מתחיל כאן
+  validFrom   DateTime @default(now())
+  /// null = בלי קץ; אחרת: כמה חודשים שכוללים מ־validFrom
+  totalMonths Int?
+  /// חודש אחרון שבו התשלום חל (כולל). אחרי זה לא נספר
+  endYear     Int?
+  endMonth    Int?
+  person      Person   @default(TALI)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+/// הלוואה / תשלומים — קרן, שולם, נשאר
+model Loan {
+  id                  String   @id @default(cuid())
+  userId              String
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label               String
+  /// סכום לחודש (למשל 3550)
+  monthlyPayment      Float
+  /// מס׳ תשלומים כולל (למשל 84)
+  totalInstallments   Int
+  /// כמה תשלומים כבר שולמו (מעדכנים ידנית)
+  monthsPaid          Int      @default(0)
+  person              Person   @default(TALI)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+/// תשלומים חריגים/חד־פעמיים
+model ExtraPayment {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label      String
+  amount     Float
+  paidOn     DateTime
+  person     Person   @default(TALI)
+  createdAt  DateTime @default(now())
+}
+
+/// קטגוריות שופינג (אפשר להרחיב)
+model SuperCategory {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String
+  color      String?  // hex
+  sortOrder  Int      @default(0)
+  purchases  SuperPurchase[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, name])
+}
+
+model SuperPurchase {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId  String
+  category    SuperCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  amount      Float
+  description String?
+  boughtOn    DateTime @default(now())
+  person      Person   @default(TALI)
+  createdAt   DateTime @default(now())
+}

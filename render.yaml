@@ -1,0 +1,8 @@
+# Render: Web Service con Node (no "Static Site").
+# https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: bills-control
+    env: node
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: npm start

@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply min-h-dvh text-olive-900 antialiased;
+  background: linear-gradient(165deg, #f0e6d4 0%, #faf3e8 40%, #f0ead8 100%);
+  background-attachment: fixed;
+}
+
+input,
+select,
+button {
+  @apply text-sm;
+}
