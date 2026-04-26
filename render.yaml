@@ -13,5 +13,5 @@ services:
     runtime: node
     healthCheckPath: /health
     # db push: crea/actualiza tablas en Neon en cada build (evita 500 si el DB estaba vacío)
-    buildCommand: npm install && npx prisma generate && npx prisma db push && npm run build
+    buildCommand: npm install --include=dev && npx prisma db push && npm run build
     startCommand: npm start
