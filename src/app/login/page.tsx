@@ -27,7 +27,14 @@ export default function Login() {
             className="mt-6 space-y-3 rounded-lg border border-amber-200 bg-amber-50/90 p-4 text-sm text-olive-900"
             role="alert"
           >
-            <p className="font-semibold">Falta configurar Google OAuth (error client_id)</p>
+            <p className="font-semibold">Falta configurar Google OAuth</p>
+            <p className="text-[11px] text-olive-700">
+              No se cargaron <code className="rounded bg-cream-200 px-0.5">AUTH_GOOGLE_ID</code> y{" "}
+              <code className="rounded bg-cream-200 px-0.5">AUTH_GOOGLE_SECRET</code> (o{" "}
+              <code className="rounded bg-cream-200 px-0.5">GOOGLE_CLIENT_*</code>) en el servidor: crea{" "}
+              <code className="rounded bg-cream-200 px-0.5">.env</code> en la raíz del proyecto y reinicia{" "}
+              <code className="rounded bg-cream-200 px-0.5">npm run dev</code>.
+            </p>
             <ol className="list-decimal pr-4 text-right text-xs leading-relaxed">
               <li>Abre Google Cloud Console → APIs &amp; Services → Credentials.</li>
               <li>Crea &quot;OAuth 2.0 Client ID&quot; (tipo: aplicación web).</li>
