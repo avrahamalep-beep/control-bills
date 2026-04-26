@@ -50,6 +50,19 @@ export const t = {
   annualPays: "הוצאות לפי חודש (השנה)",
   noData: "אין נתונים",
   allowedOnly: "גישה רק למשתמשים מורשים",
+
+  oauthMissingTitle: "נדרש להגדיר Google OAuth",
+  oauthMissingIntro:
+    "לא נטענו AUTH_GOOGLE_ID ו-AUTH_GOOGLE_SECRET (או GOOGLE_CLIENT_*) בשרת. צור קובץ .env בשורש הפרויקט והפעל מחדש npm run dev.",
+  oauthStepConsole: "פתח Google Cloud Console → APIs & Services → Credentials.",
+  oauthStepCreate: 'צור "OAuth 2.0 Client ID" (סוג: Web application).',
+  oauthStepRedirect: "ב-Authorized redirect URIs הוסף בדיוק:",
+  oauthStepRedirectProd: "בפרודקשן (Render):",
+  oauthStepCopy: "העתק Client ID ו-Client Secret ל-.env:",
+  oauthStepAltKeys: "גם תקף: GOOGLE_CLIENT_ID ו-GOOGLE_CLIENT_SECRET.",
+  oauthStepRestart: "הפעל מחדש npm run dev. ב-Render הוסף את אותם משתני סביבה.",
+  oauthNeedSecretOnly:
+    "מזהה הלקוח נטען, אבל חסר AUTH_GOOGLE_SECRET. הדבק את ה-Client secret מ-Google Cloud ב-.env והפעל מחדש.",
 } as const;
 
 export type TKey = keyof typeof t;

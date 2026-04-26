@@ -7,8 +7,19 @@ function hasGoogleOAuth() {
   return Boolean(id && sec && id.length > 8 && sec.length > 8);
 }
 
+function authBaseUrl() {
+  const u = process.env.AUTH_URL || process.env.NEXTAUTH_URL || "http://localhost:3000";
+  return u.replace(/\/$/, "");
+}
+
 export default function Login() {
   const ready = hasGoogleOAuth();
+  const id = process.env.AUTH_GOOGLE_ID || process.env.GOOGLE_CLIENT_ID;
+  const sec = process.env.AUTH_GOOGLE_SECRET || process.env.GOOGLE_CLIENT_SECRET;
+  const hasId = Boolean(id && id.length > 8);
+  const hasSec = Boolean(sec && sec.length > 8);
+  const callbackLocal = `${authBaseUrl()}/api/auth/callback/google`;
+  const callbackProd = "https://control-bills.onrender.com/api/auth/callback/google";
 
   return (
     <div
@@ -27,36 +38,31 @@ export default function Login() {
             className="mt-6 space-y-3 rounded-lg border border-amber-200 bg-amber-50/90 p-4 text-sm text-olive-900"
             role="alert"
           >
-            <p className="font-semibold">Falta configurar Google OAuth</p>
+            <p className="font-semibold">{t.oauthMissingTitle}</p>
             <p className="text-[11px] text-olive-700">
-              No se cargaron <code className="rounded bg-cream-200 px-0.5">AUTH_GOOGLE_ID</code> y{" "}
-              <code className="rounded bg-cream-200 px-0.5">AUTH_GOOGLE_SECRET</code> (o{" "}
-              <code className="rounded bg-cream-200 px-0.5">GOOGLE_CLIENT_*</code>) en el servidor: crea{" "}
-              <code className="rounded bg-cream-200 px-0.5">.env</code> en la raíz del proyecto y reinicia{" "}
-              <code className="rounded bg-cream-200 px-0.5">npm run dev</code>.
+              {hasId && !hasSec ? t.oauthNeedSecretOnly : t.oauthMissingIntro}
             </p>
             <ol className="list-decimal pr-4 text-right text-xs leading-relaxed">
-              <li>Abre Google Cloud Console → APIs &amp; Services → Credentials.</li>
-              <li>Crea &quot;OAuth 2.0 Client ID&quot; (tipo: aplicación web).</li>
+              <li>{t.oauthStepConsole}</li>
+              <li>{t.oauthStepCreate}</li>
               <li>
-                En <strong>URI de redirección autorizados</strong> añade exactamente:
+                <strong>{t.oauthStepRedirect}</strong>
                 <br />
-                <code className="mt-1 block break-all rounded bg-cream-200/80 p-1 text-[11px]">
-                  http://localhost:3000/api/auth/callback/google
-                </code>
-                (y en producción: <code className="text-[11px]">https://tu-dominio.onrender.com/api/auth/callback/google</code>)
+                <code className="mt-1 block break-all rounded bg-cream-200/80 p-1 text-[11px]">{callbackLocal}</code>
+                <span className="mt-1 block text-[11px] text-olive-700">{t.oauthStepRedirectProd}</span>
+                <code className="mt-1 block break-all rounded bg-cream-200/80 p-1 text-[11px]">{callbackProd}</code>
               </li>
               <li>
-                Copia <strong>ID de cliente</strong> y <strong>Secreto</strong> a tu <code className="rounded bg-cream-200 px-0.5">.env</code>:
+                {t.oauthStepCopy}
                 <br />
                 <code className="mt-1 block text-[11px]">
                   AUTH_GOOGLE_ID=&quot;...&quot;
                   <br />
                   AUTH_GOOGLE_SECRET=&quot;...&quot;
                 </code>
-                (También válidos: <code>GOOGLE_CLIENT_ID</code> y <code>GOOGLE_CLIENT_SECRET</code>.)
+                <span className="mt-1 block text-[11px]">({t.oauthStepAltKeys})</span>
               </li>
-              <li>Reinicia <code className="text-[11px]">npm run dev</code>. En Render, añade las mismas variables al servicio.</li>
+              <li>{t.oauthStepRestart}</li>
             </ol>
           </div>
         ) : (
